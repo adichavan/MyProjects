@@ -538,7 +538,11 @@ INSERT INTO custbusiness_T (cust_id, territory_id) VALUES
 (2020, 10020);
 
 
-/*Q1*/
+/*Q1
+Populate the 17 tables with at least 20 rows per table. 
+Note that rows in associative entity relations may not be 20 (could be more or fewer)
+since they are subject to the relationships between regular entity relations
+*/
 SELECT 'employee_T' as Employee_Table, COUNT(*) FROM employee_T;
 SELECT 'workcenter_T' as WorkCenter_Table, COUNT(*) FROM workcenter_T;
 SELECT 'productline_T' as ProductLine_Table, COUNT(*) FROM productline_T;
@@ -557,12 +561,19 @@ SELECT 'order_T' as Order_Table, COUNT(*) FROM order_T;
 SELECT 'prodrequest_T' as ProductRequest_Table, COUNT(*) FROM prodrequest_T;
 SELECT 'custbusiness_T' as CustomerBusiness_Table, COUNT(*) FROM custbusiness_T;
 
-/*Q2*/
+
+/*Q2
+Do a Cartesian Product from the following tables (Product, Customer, Employee, Workcenter). The generated result may not make sense.
+*/
 SELECT * FROM product_T CROSS JOIN customer_T
 CROSS JOIN employee_T
 CROSS JOIN workcenter_T;
 
-/*Q3*/
+
+/*Q3
+List customer information for customers that have placed orders for a particular product and from a particular city 
+(You decide on the value of any product_id from order_product table and territory_desc value from territory table). Use Equi-join.
+*/
 SELECT customer_T.cust_id, customer_T.cust_name, customer_T.cust_address,
 product_T.prod_desc, salesterritory_T.territory_id
 FROM customer_T, product_T, order_T, prodrequest_T, salesterritory_T, custbusiness_T
@@ -573,7 +584,11 @@ AND salesterritory_T.territory_id = custbusiness_T.territory_id
 AND custbusiness_T.cust_id = customer_T.cust_id
 AND product_T.prod_desc IN ('Basic', 'Luxury') AND salesterritory_T.territory_id in (10003,10005);
 
-/*Q4*/
+
+/*Q4
+List employee information for those employees whose first name starts with ‘J’ and worked in a certain workcenter location 
+(You decide the value of location from the WORKCENTER table and first name from EMPLOYEE). Use Inner Join
+*/
 SELECT e.emp_name, e.emp_id, e.emp_address, e.supervisor, wc.location FROM employee_T as e
 INNER JOIN worksin_T as w ON e.emp_id = w.emp_id
 INNER JOIN workcenter_T as wc ON w.workcenter_id = wc.workcenter_id
@@ -583,33 +598,53 @@ AND wc.location IN ('Barcelona', 'Munich');
 UPDATE employee_T
 SET emp_name = 'Jurgen Klopp' WHERE emp_id = 17;
 
-/*Q5*/
+
+/*Q5
+List names of salespeople who belong to a certain territory description 
+(You decide on the value of territory_desc from TERRITORY table). Use Natural Join
+*/
 SELECT salesperson_T.salesperson_name, salesterritory_T.territory_id
 FROM salesperson_T NATURAL JOIN salesterritory_T
 WHERE salesterritory_T.territory_id IN (10010, 10005, 10007);
 
-/*Q6*/
+
+/*Q6
+Do a LEFT JOIN on PRODUCT_LINE and PRODUCT tables
+*/
 SELECT * FROM productline_T
 LEFT JOIN product_T
 ON productline_T.productline_id = product_T.productline_id;
 
-/*Q7*/
+
+/*Q7
+List material_id from MATERIAL and SUPPLIES tables using UNION.
+*/
 SELECT material_id FROM rawmaterial_T
 UNION
 SELECT material_id FROM supplies_T;
 
-/*Q8*/
+
+/*Q8
+List customer_id from ORDER and CUSTOMER tables using UNION ALL
+*/
 SELECT cust_id FROM order_T
 UNION ALL
 SELECT cust_id FROM customer_T;
 
-/*Q9*/
+
+/*Q9
+List employee_id from EMPLOYEE and SKILL tables using INTERSECT (EXISTS).
+*/
 SELECT emp_id FROM employee_T
 WHERE EXISTS
 (SELECT emp_id FROM empskill_T
 WHERE empskill_T.emp_id = employee_T.emp_id);
 
-/*Q10*/
+
+/*Q10
+Create a dynamic VIEW for customer information who ordered products made in certain location 
+(You decide on the value of that location from WORKCENTER table)
+*/
 CREATE VIEW cust_info AS
 (SELECT customer_T.* , workcenter_T.location
 FROM customer_T NATURAL JOIN order_T NATURAL JOIN prodrequest_T NATURAL JOIN product_T
@@ -618,7 +653,12 @@ WHERE workcenter_T.location IN ('Barcelona', 'Madrid'));
 
 SELECT * FROM cust_info;
 
-/*Q11*/
+
+/*Q11
+Create a Stored Procedure for obtaining product information (product_desc) for products that have 
+been ordered more than x times (where x is an input parameter to your stored procedure). 
+You will need data from the product and order_product tables. You will also find the COUNT aggregate function helpful here 
+*/
 DELIMITER //
 CREATE PROCEDURE prod_desc_x ( IN x_count int(10))
 BEGIN
